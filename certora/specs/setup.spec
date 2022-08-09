@@ -1,6 +1,8 @@
  /******************************************************************
  * IMPORTS/SETUP                                                  *
  ******************************************************************/
+// using rootHarness as root
+
 methods {
 	set(bytes32 name, bytes32 meta, bytes32 data)
     get(bytes32 slot) returns (bytes32 meta, bytes32 data) envfree
@@ -19,22 +21,30 @@ ghost metaValue(address, bytes32) returns uint256{
     init_state axiom forall address z. forall bytes32 n. metaValue(z, n) == 0;
 }
 
-hook Sstore meta [KEY address zone][KEY bytes32 name] uint256 meta(uint256 meta) STORAGE{
+// hook Sstore meta [KEY address zone][KEY bytes32 name] uint256 meta(uint256 meta) STORAGE{
 
-    }
+//     }
 
  /******************************************************************
  * MEAT AND POTATOES:                                             *
  ******************************************************************/
 
 // sanity
+// rule sanity(method f)
 rule sanity(method f)
 {
+	bytes32 name;
+	bytes32 meta;
+	bytes32 data;
 	env e;
 	calldataarg args;
-	f(e,args);
+	// checkArgs(e, args);
+	f(e, args);
 	assert false;
 }
+
+
+
 
 
 

@@ -11,27 +11,36 @@ pragma solidity 0.8.13;
 //     }
 // }
 
-// interface Dmap {
-//     error LOCKED();
-//     event Set(
-//         address indexed zone,
-//         bytes32 indexed name,
-//         bytes32 indexed meta,
-//         bytes32 indexed data
-//     ) anonymous;
+interface Dmap {
+    error LOCKED();
+    event Set(
+        address indexed zone,
+        bytes32 indexed name,
+        bytes32 indexed meta,
+        bytes32 indexed data
+    ) anonymous;
 
-//     function set(bytes32 name, bytes32 meta, bytes32 data) external;
-//     function get(bytes32 slot) external view returns (bytes32 meta, bytes32 data);
-// }
+    function set(bytes32 name, bytes32 meta, bytes32 data) external;
+    function get(bytes32 slot) external view returns (bytes32 meta, bytes32 data);
+}
 
 
-contract _dmap_ {
+contract dmapHarness {
     error LOCKED();
     uint256 constant LOCK = 0x1;
     constructor(address rootzone) { assembly {
         sstore(0, LOCK)
         sstore(1, shl(96, rootzone))
     }}
+
+    // function testHarnessFunction(uint120 x, uint120 y) external pure returns(uint120 z){
+    //     z=x+y;
+    // }
+
+    // function checkArgs(bytes32 name, bytes32 meta, bytes32 data) external pure{
+        
+    // }
+
     fallback() external payable { assembly {
         if eq(36, calldatasize()) {
             mstore(0, sload(calldataload(4)))
