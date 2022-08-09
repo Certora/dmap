@@ -1,5 +1,5 @@
 certoraRun certora/harness/dmapHarness.sol certora/harness/rootHarness.sol \
-    --verify dmapHarness:certora/specs/setup.spec \
+    --verify dmapHarness:certora/specs/dmap.spec \
     --solc solc8.13 \
     --staging \
     --optimistic_loop \

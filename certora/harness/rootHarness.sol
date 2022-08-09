@@ -40,4 +40,8 @@ contract rootHarness {
         dmap.set(name, LOCK, bytes32(bytes20(zone)));
         emit Etch(name, zone);
     }
+
+    function setRoot(bytes32 name, bytes32 meta, bytes32 data) external {
+        dmap.set(name, meta, data);
+    }
 }

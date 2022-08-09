@@ -4,7 +4,7 @@
 // using rootHarness as root
 
 methods {
-	set(bytes32 name, bytes32 meta, bytes32 data)
+	set(bytes32 name, bytes32 meta, bytes32 data) => DISPATCHER(true)
     get(bytes32 slot) returns (bytes32 meta, bytes32 data) envfree
 }
 
@@ -31,15 +31,15 @@ ghost metaValue(address, bytes32) returns uint256{
 
 // sanity
 // rule sanity(method f)
-rule sanity(method f)
+rule sanity()
 {
 	bytes32 name;
 	bytes32 meta;
 	bytes32 data;
 	env e;
-	calldataarg args;
+	setRoot(e, name, meta, data);
 	// checkArgs(e, args);
-	f(e, args);
+	// f(e, args);
 	assert false;
 }
 
