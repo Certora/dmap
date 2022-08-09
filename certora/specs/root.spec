@@ -4,7 +4,8 @@
 // using rootHarness as root
 
 methods {
-	set(bytes32 name, bytes32 meta, bytes32 data) => DISPATCHER(true)
+	set(bytes32 name, bytes32 meta, bytes32 data)
+	// set(bytes32 name, bytes32 meta, bytes32 data) => DISPATCHER(true)
     get(bytes32 slot) returns (bytes32 meta, bytes32 data) envfree
 }
 
@@ -36,8 +37,9 @@ rule sanity()
 	bytes32 name;
 	bytes32 meta;
 	bytes32 data;
+	address zone;
 	env e;
-	setRoot(e, name, meta, data);
+	etch(e, name, meta, zone);
 	// checkArgs(e, args);
 	// f(e, args);
 	assert false;

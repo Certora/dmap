@@ -5,8 +5,9 @@ certoraRun certora/harness/dmapHarness.sol certora/harness/rootHarness.sol \
     --optimistic_loop \
     --send_only \
     --solc_args "['--optimize', '200']" \
-    --msg "sanity parametric to check if fallback is skipped or not" \
-    --rule "sanity"
+    --msg "calling get twice" \
+    --rule "getTwice" \
+    --rule_sanity basic 
 
 
     # --link rootHarness:dmap=Dmap \

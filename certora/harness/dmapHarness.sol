@@ -41,6 +41,21 @@ contract dmapHarness {
         
     // }
 
+    // function calculateSlot(address zone, bytes32 name) external pure returns(bytes32 slot){
+    //     slot = keccak256(zone, name);
+    // }
+    
+    // function setCall(bytes32 name, bytes32 meta, bytes32 data) external {
+    //     this.set(name, meta, data);
+    // }
+
+    function get (bytes32 slot) external returns(bytes32 meta, bytes32 data)
+    { assembly{
+                mstore(0, sload(calldataload(4)))
+                mstore(32, sload(add(1, calldataload(4))))
+                return(0, 64)
+            }
+    }
     fallback() external payable { assembly {
         if eq(36, calldatasize()) {
             mstore(0, sload(calldataload(4)))
