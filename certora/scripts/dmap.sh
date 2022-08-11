@@ -5,8 +5,8 @@ certoraRun certora/harness/dmapHarness.sol certora/harness/rootHarness.sol \
     --optimistic_loop \
     --send_only \
     --solc_args "['--optimize', '200']" \
-    --msg "hash calc check" \
-    --rule "hashCalCheck" \
+    --msg "sanity" \
+    --rule "sanity" \
     --rule_sanity basic
 
 

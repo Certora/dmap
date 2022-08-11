@@ -31,18 +31,19 @@ ghost metaValue(address, bytes32) returns uint256{
  ******************************************************************/
 
 // sanity
-// // rule sanity(method f)
-// rule sanity()
-// {
-// 	bytes32 name;
-// 	bytes32 meta;
-// 	bytes32 data;
-// 	env e;
-// 	calldataarg args;
-// 	// checkArgs(e, args);
-// 	setCall(e, name, meta, data);
-// 	assert false;
-// }
+// rule sanity(method f)
+rule sanity(method f)
+{
+	bytes32 name;
+	bytes32 meta;
+	bytes32 data;
+	env e;
+	calldataarg args;
+    f(e, args);
+	// checkArgs(e, args);
+	// setCall(e, name, meta, data);
+	assert false;
+}
 
 
 rule getTwice(bytes32 hash1, bytes32 hash2){
@@ -76,21 +77,21 @@ rule hashCalCheck(env e){
 // bytes32 slot2 = slotCal(e, zone2, name2);
 // // assert false;
 // assert slot1 != slot2,"hash collision";
-address zone1 = 0x401;
-bytes32 name1 = 0xd;
-address zone2 = 0x401;
-bytes32 name2 = 0xe;
-address zone3 = 0x401;
-bytes32 name3 = 0xe;
+address zone1;
+bytes32 name1;
+address zone2;
+bytes32 name2;
+address zone3;
+bytes32 name3;
 // address zone2;
 // bytes32 name2;
-// require zone1 != zone2;
+require zone1 != zone2 || name1 != name2;
 bytes32 slot1 = slotCal(e, zone1, name1);
 bytes32 slot2 = slotCal(e, zone2, name2);
 bytes32 slot3 = slotCal(e, zone2, name2);
 // bytes32 slot2 = slotCal(e, zone2, name2);
-assert slot1 != slot2 && slot2 == slot3;
-assert false;
+assert slot1 != slot2;
+// assert false;
 // assert slot1 != slot2,"hash collision";
 }
 
@@ -107,19 +108,43 @@ address zone;
 bytes32 name;
 bytes32 slot = slotCal(e, zone, name);
 metaBefore, dataBefore = get(slot);
-// require metaBefore == 0;
+// require metaBefore == 0x0;
 calldataarg args;
 
 f(e, args);
-
 metaAfter, dataAfter = get(slot);
 
-assert (metaAfter != metaBefore) <=> e.msg.sender == zone,
+// require metaAfter != metaBefore;
+
+// assert (metaAfter != metaBefore) => e.msg.sender != zone,
+assert e.msg.sender == zone,
 "zones cannot write to meta of partitions of other zones";
 // assert dataBefore != dataAfter <=> e.msg.sender == zone,
 // "zones cannot write to data of partitions of other zones";
+assert false;
 
 }
+
+
+rule slotChange(env e, method f){
+
+    bytes32 slot;
+    uint256 metaBefore;
+    bytes32 dataBefore;
+    uint256 metaAfter;
+    bytes32 dataAfter;
+
+    metaBefore, dataBefore = get(slot);
+    // require metaBefore == 0x0;
+    calldataarg args;
+
+    f(e, args);
+    metaAfter, dataAfter = get(slot);
+
+    assert metaBefore == metaAfter;
+
+}
+
 
 // rule to check if it's possible to write to locked values
 

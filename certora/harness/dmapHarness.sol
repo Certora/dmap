@@ -28,12 +28,12 @@ contract dmapHarness{
     }}
     function get (bytes32 slot) external returns(uint256 meta, bytes32 data)
     { assembly{
-                let x := mload(64)
-                // mstore(0, sload(calldataload(4)))
-                mstore(x, sload(slot))
-                // mstore(32, sload(add(1, calldataload(4))))
-                mstore(add(x,32), sload(add(1, slot)))
-                return(x, 64)
+                // let x := mload(64)
+                mstore(0, sload(calldataload(4)))
+                // mstore(0, sload(slot))
+                mstore(32, sload(add(1, calldataload(4))))
+                // mstore(add(x,32), sload(add(1, slot)))
+                return(0, 64)
             }
     }
 
@@ -45,11 +45,13 @@ contract dmapHarness{
         // mstore(0x40, Zone)
         // mstore(add(0x40,32), Name)
 
-        let x := mload(64)
-        mstore(x, zone)
-        mstore(add(x,32), name)
+        // let x := mload(64)
+        // mstore(x, zone)
+        // mstore(add(x,32), name)
+        mstore(0, zone)
+        mstore(32, name)
 
-        slot := keccak256(x,64)
+        slot := keccak256(0,64)
     }
     }
 
