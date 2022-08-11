@@ -5,7 +5,13 @@
 
 pragma solidity 0.8.13;
 
-// import "../../core/dmap.sol";
+import "../../contracts/RewardsManager.sol";
+// contract testContract{
+//     function testFunction(uint120 x, uint120 y)external pure returns (uint120 z) {
+//         z = x+y;
+//     }
+// }
+
 interface Dmap {
     error LOCKED();
     event Set(
@@ -19,13 +25,31 @@ interface Dmap {
     function get(bytes32 slot) external view returns (bytes32 meta, bytes32 data);
 }
 
-contract dmapHarness{
-     error LOCKED();
+
+contract dmapHarness {
+    error LOCKED();
     uint256 constant LOCK = 0x1;
     constructor(address rootzone) { assembly {
         sstore(0, LOCK)
         sstore(1, shl(96, rootzone))
     }}
+
+    // function testHarnessFunction(uint120 x, uint120 y) external pure returns(uint120 z){
+    //     z=x+y;
+    // }
+
+    // function checkArgs(bytes32 name, bytes32 meta, bytes32 data) external pure{
+        
+    // }
+
+    // function calculateSlot(address zone, bytes32 name) external pure returns(bytes32 slot){
+    //     slot = keccak256(zone, name);
+    // }
+    
+    // function setCall(bytes32 name, bytes32 meta, bytes32 data) external {
+    //     this.set(name, meta, data);
+    // }
+
     function get (bytes32 slot) external returns(uint256 meta, bytes32 data)
     { assembly{
                 let x := mload(64)
@@ -77,23 +101,4 @@ contract dmapHarness{
         }
         revert(0, 0)
     }}
-
-
-    // function testHarnessFunction(uint120 x, uint120 y) external pure returns(uint120 z){
-    //     z=x+y;
-    // }
-
-    // function checkArgs(bytes32 name, bytes32 meta, bytes32 data) external pure{
-        
-    // }
-
-    // function calculateSlot(address zone, bytes32 name) external pure returns(bytes32 slot){
-    //     slot = keccak256(zone, name);
-    // }
-    
-    // function setCall(bytes32 name, bytes32 meta, bytes32 data) external {
-    //     this.set(name, meta, data);
-    // }
-
-    
 }

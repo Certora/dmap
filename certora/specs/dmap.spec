@@ -5,7 +5,7 @@
 
 methods {
 	set(bytes32 name, bytes32 meta, bytes32 data)
-    get(bytes32 slot) returns (bytes32 meta, bytes32 data) envfree
+    get(bytes32 slot) returns (uint256 meta, bytes32 data) envfree
 	calculateSlot(address zone, bytes32 name) returns(bytes32 slot)envfree
 }
 
@@ -47,23 +47,106 @@ ghost metaValue(address, bytes32) returns uint256{
 
 rule getTwice(bytes32 hash1, bytes32 hash2){
 
-bytes32 meta1;
+uint256 meta1;
 bytes32 data1;
-bytes32 meta2;
+uint256 meta2;
 bytes32 data2;
+uint256 meta3;
+bytes32 data3;
 
 require hash1 != hash2;
 
 meta1, data1 = get(hash1);
 meta2, data2 = get(hash2);
+meta3, data3 = get(hash2);
+
 
 assert meta1 == meta2;
 assert data1 == data2;
 }
 
 
+rule hashCalCheck(env e){
+// address zone1;
+// bytes32 name1;
+// address zone2;
+// bytes32 name2;
+// require zone1 != zone2;
+// bytes32 slot1 = slotCal(e, zone1, name1);
+// bytes32 slot2 = slotCal(e, zone2, name2);
+// // assert false;
+// assert slot1 != slot2,"hash collision";
+address zone1 = 0x401;
+bytes32 name1 = 0xd;
+address zone2 = 0x401;
+bytes32 name2 = 0xe;
+address zone3 = 0x401;
+bytes32 name3 = 0xe;
+// address zone2;
+// bytes32 name2;
+// require zone1 != zone2;
+bytes32 slot1 = slotCal(e, zone1, name1);
+bytes32 slot2 = slotCal(e, zone2, name2);
+bytes32 slot3 = slotCal(e, zone2, name2);
+// bytes32 slot2 = slotCal(e, zone2, name2);
+assert slot1 != slot2 && slot2 == slot3;
+assert false;
+// assert slot1 != slot2,"hash collision";
+}
 
-// // invariant
+
+// only the caller can write to their partition
+
+rule zonesCanWriteToTheirPartionsOnly(env e, method f){
+uint256 metaBefore;
+bytes32 dataBefore;
+uint256 metaAfter;
+bytes32 dataAfter;
+
+address zone;
+bytes32 name;
+bytes32 slot = slotCal(e, zone, name);
+metaBefore, dataBefore = get(slot);
+// require metaBefore == 0;
+calldataarg args;
+
+f(e, args);
+
+metaAfter, dataAfter = get(slot);
+
+assert (metaAfter != metaBefore) <=> e.msg.sender == zone,
+"zones cannot write to meta of partitions of other zones";
+// assert dataBefore != dataAfter <=> e.msg.sender == zone,
+// "zones cannot write to data of partitions of other zones";
+
+}
+
+// rule to check if it's possible to write to locked values
+
+rule noOverWritingLockedSlot(env e, method f)
+// filtered{ f -> f.selector != }
+{
+    bytes32 slot;
+    uint256 metaBefore;
+    bytes32 dataBefore;
+    uint256 metaAfter;
+    bytes32 dataAfter;
+
+    metaBefore, dataBefore = get(slot);
+    // assert false;
+    require metaBefore == 1;
+    // assert false;
+    calldataarg args;
+    f(e, args);
+    metaAfter, dataAfter = get(slot);
+
+    // assert false;
+    assert dataAfter == dataBefore,"Locked data cannot be overwritten";
+
+}
+
+
+// // invariant 
 
 // invariant metaLessThanOne(address zone, bytes32 name)
 // metaValue(zone, name) < 2
@@ -115,12 +198,12 @@ assert data1 == data2;
 //     "only set function should be able to lock a name";
 // }
 
-// //  rule to check the immutability of a lock
-// rule immutableLock(env e, bytes32 name, method f){
+//  rule to check the immutability of a lock
+// rule immutableLock(env e, bytes32 hash1,method f){
 
 //     bytes32 metaBefore; 
 //     bytes32 dataBefore;
-//     metaBefore, dataBefore = get(e,calculateSlot(e.msg.sender, name));
+//     metaBefore, dataBefore = get(hash1);
 //     calldataarg args;
     
 //     f(e, args);    
@@ -128,7 +211,7 @@ assert data1 == data2;
 //     bytes32 metaAfter; 
 //     bytes32 dataAfter;
 
-//     metaAfter, dataAfter = get(e,calculateSlot(e.msg.sender, name));
+//     metaAfter, dataAfter = get(hash1);
 //     assert metaBefore == LOCK() => metaAfter == LOCK(),"Lock is not immutable";
 // }
 
