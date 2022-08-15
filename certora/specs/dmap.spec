@@ -251,3 +251,29 @@ rule noOverWritingLockedSlot(env e, method f)
 
 // 	assert lastreverted => metaBefore == LOCK() || size(args) != 36 || size(args) != 100,"unexpected revert behaviour";
 // }
+
+// STATUS - in progress / verified / error / timeout / etc.
+// TODO: rule description
+rule basicFRule(env e, method f) {
+    uint256 meta1;
+    bytes32 data1;
+    bytes32 name1;
+
+    bytes32 slot1 = slotCal(e, e.msg.sender, name1);
+
+    calldataarg args;
+
+    storage initialStorage = lastStorage;
+
+    certorafallback_0(e, args);
+
+    meta1, data1 = get(slot1);
+
+    checkArgs(e, args) at initialStorage;
+
+    bytes32 name = getName(e);
+    uint256 meta = getMeta(e);
+    bytes32 data = getData(e);
+
+    assert false, "Remember, with great power comes great responsibility.";
+}

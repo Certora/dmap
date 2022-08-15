@@ -20,7 +20,7 @@ interface Dmap {
 }
 
 contract dmapHarness{
-     error LOCKED();
+    error LOCKED();
     uint256 constant LOCK = 0x1;
     constructor(address rootzone) { assembly {
         sstore(0, LOCK)
@@ -85,9 +85,27 @@ contract dmapHarness{
     //     z=x+y;
     // }
 
-    // function checkArgs(bytes32 name, bytes32 meta, bytes32 data) external pure{
-        
-    // }
+    bytes32 nameGlobal;
+    uint256 metaGlobal;
+    bytes32 dataGlobal;
+
+    function checkArgs(bytes32 name, uint256 meta, bytes32 data) public {
+        nameGlobal = name;
+        metaGlobal = meta;
+        dataGlobal = data;
+    }
+
+    function getName() public returns(bytes32) {
+        return nameGlobal;
+    }
+
+    function getMeta() public returns(uint256) {
+        return metaGlobal;
+    }
+
+    function getData() public returns(bytes32) {
+        return dataGlobal;
+    }
 
     // function calculateSlot(address zone, bytes32 name) external pure returns(bytes32 slot){
     //     slot = keccak256(zone, name);
