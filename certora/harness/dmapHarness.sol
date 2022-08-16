@@ -7,10 +7,7 @@ pragma solidity 0.8.13;
 import {_dmap_} from "../../core/dmap.sol";
 
 contract dmapHarness is _dmap_ {
-    constructor(address rootzone) { assembly {
-    sstore(0, LOCK)
-    sstore(1, shl(96, rootzone))
-    }}
+    constructor(address rootzone) _dmap_(rootzone) {}
     function getMetaData (bytes32 slot) external returns(uint256 meta, bytes32 data)
     { assembly{
                 // let x := mload(64)
