@@ -6,7 +6,7 @@
 pragma solidity 0.8.13;
 
 interface Dmap {
-    error LOCKED();
+    // error LOCKED();
     event Set(
         address indexed zone,
         bytes32 indexed name,

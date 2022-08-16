@@ -57,9 +57,9 @@ bytes32 data3;
 
 require hash1 != hash2;
 
-meta1, data1 = get(hash1);
-meta2, data2 = get(hash2);
-meta3, data3 = get(hash2);
+meta1, data1 = getMetaData(hash1);
+meta2, data2 = getMetaData(hash2);
+meta3, data3 = getMetaData(hash2);
 
 
 assert meta1 == meta2;
@@ -107,12 +107,12 @@ bytes32 dataAfter;
 address zone;
 bytes32 name;
 bytes32 slot = slotCal(e, zone, name);
-metaBefore, dataBefore = get(slot);
+metaBefore, dataBefore = getMetaData(slot);
 // require metaBefore == 0x0;
 calldataarg args;
 
 f(e, args);
-metaAfter, dataAfter = get(slot);
+metaAfter, dataAfter = getMetaData(slot);
 
 // require metaAfter != metaBefore;
 
@@ -125,48 +125,100 @@ assert false;
 
 }
 
+rule slotGetCheck(env e, method f){
 
+    bytes32 Slot;
+    uint256 metaBefore;
+    bytes32 dataBefore;
+    uint256 metaAfter;
+    bytes32 dataAfter;
+    uint256 meta;
+    bytes32 data;
+    
+    metaBefore, dataBefore = getMetaData(Slot);
+
+    setStore(e, Slot, meta, data);
+
+    metaAfter, dataAfter = getMetaData(Slot);
+
+    assert false;
+}
+
+// rule to check if it's possible to write to a locked slot
+// STATUS - in progress
 rule slotChange(env e, method f){
 
-    bytes32 slot;
+    bytes32 Slot;
     uint256 metaBefore;
     bytes32 dataBefore;
     uint256 metaAfter;
     bytes32 dataAfter;
 
-    metaBefore, dataBefore = get(slot);
-    // require metaBefore == 0x0;
+    metaBefore, dataBefore = getMetaData(Slot);
+    require metaBefore == 0x1;
     calldataarg args;
 
-    f(e, args);
-    metaAfter, dataAfter = get(slot);
+    checkArgs(e, args);
 
-    assert metaBefore == metaAfter;
+    bytes32 argsName = getName(e);
+    uint256 argsMeta = getMeta(e);
+    bytes32 argsData = getData(e);
+
+    f(e, args);
+    metaAfter, dataAfter = getMetaData(Slot);
+
+    assert dataBefore == dataAfter;
 
 }
 
 
 // rule to check if it's possible to write to locked values
-
+// STATUS - in progress
 rule noOverWritingLockedSlot(env e, method f)
-// filtered{ f -> f.selector != }
+filtered{ f -> f.isFallback }
 {
     bytes32 slot;
     uint256 metaBefore;
     bytes32 dataBefore;
     uint256 metaAfter;
     bytes32 dataAfter;
+    bytes32 lockCheckBefore;
+    bytes32 lockCheckAfter;
+    bytes32 name;
+    
 
-    metaBefore, dataBefore = get(slot);
+
+    slot = slotCal(e, e.msg.sender, name);
+    // slot = slotCal(e.msg.sender, name);
+    metaBefore, dataBefore = getMetaData(slot);
     // assert false;
-    require metaBefore == 1;
+    require metaBefore == LOCK();
     // assert false;
+
     calldataarg args;
-    f(e, args);
-    metaAfter, dataAfter = get(slot);
 
-    // assert false;
-    assert dataAfter == dataBefore,"Locked data cannot be overwritten";
+    storage initialStorage = lastStorage;
+
+    // checkArgs(e, args) at initialStorage;
+    checkArgs(e, args);
+
+    bytes32 argsName = getName(e);
+    uint256 argsMeta = getMeta(e);
+    bytes32 argsData = getData(e);
+
+    require argsName == name;
+    require argsData != dataBefore;
+    require argsMeta == 0x0;
+
+    // f(e, args) at initialStorage;
+    f(e, args);
+    
+    // set(e, name, meta, data);
+    // certorafallback_0(e, name, meta, data);
+    metaAfter, dataAfter = getMetaData(slot);
+
+    assert false;
+    // assert dataAfter == dataBefore,"Locked data cannot be overwritten";
 
 }
 
@@ -267,7 +319,7 @@ rule basicFRule(env e, method f) {
 
     certorafallback_0(e, args);
 
-    meta1, data1 = get(slot1);
+    meta1, data1 = getMetaData(slot1);
 
     checkArgs(e, args) at initialStorage;
 
