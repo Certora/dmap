@@ -64,6 +64,29 @@ contract dmapHarnessWithoutImport{
     }
     }
 
+    function set (bytes32 Name, bytes32 Meta, bytes32 Data) external {
+        assembly{
+        let name := calldataload(4)
+        let meta := calldataload(36)
+        let data := calldataload(68)
+        mstore(0, caller())
+        mstore(32, name)
+        let slot := keccak256(0, 64)
+        log4(0, 0, caller(), name, meta, data)
+        sstore(add(slot, 1), data)
+        if iszero(or(xor(100, calldatasize()), and(LOCK, sload(slot)))) {
+            sstore(slot, meta)
+            return(0, 0)
+        }
+        if eq(100, calldatasize()) {
+            mstore(0, shl(224, 0xa1422f69))
+            revert(0, 4)
+        }
+        revert(0, 0)
+
+    }  
+    }
+
     fallback() external payable { assembly {
         if eq(36, calldatasize()) {
             mstore(0, sload(calldataload(4)))
@@ -94,27 +117,27 @@ contract dmapHarnessWithoutImport{
     //     z=x+y;
     // }
 
-    bytes32 nameGlobal;
-    uint256 metaGlobal;
-    bytes32 dataGlobal;
+    // bytes32 nameGlobal;
+    // uint256 metaGlobal;
+    // bytes32 dataGlobal;
 
-    function checkArgs(bytes32 name, uint256 meta, bytes32 data) public {
-        nameGlobal = name;
-        metaGlobal = meta;
-        dataGlobal = data;
+    function checkArgs(bytes32 name, bytes32 meta, bytes32 data) public returns(bytes32 Name, bytes32 Meta, bytes32 Data){
+        Name = name;
+        Meta = meta;
+        Data = data;
     }
 
-    function getName() public returns(bytes32) {
-        return nameGlobal;
-    }
+    // function getName() public returns(bytes32) {
+    //     return nameGlobal;
+    // }
 
-    function getMeta() public returns(uint256) {
-        return metaGlobal;
-    }
+    // function getMeta() public returns(uint256) {
+    //     return metaGlobal;
+    // }
 
-    function getData() public returns(bytes32) {
-        return dataGlobal;
-    }
+    // function getData() public returns(bytes32) {
+    //     return dataGlobal;
+    // }
 
     // function calculateSlot(address zone, bytes32 name) external pure returns(bytes32 slot){
     //     slot = keccak256(zone, name);

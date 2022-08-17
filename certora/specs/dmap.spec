@@ -46,13 +46,43 @@ rule sanity(method f)
 }
 
 
+rule lockedSlotOverwriteSetCheck(env e)
+{
+bytes32 slot;
+bytes32 Slot;
+bytes32 name;
+bytes32 meta;
+bytes32 data;
+bytes32 metaBefore;
+bytes32 dataBefore;
+bytes32 metaAfter;
+bytes32 dataAfter;
+
+metaBefore, dataBefore = getMetaData(e, slot);
+require metaBefore == 0x1;
+Slot = slotCal(e, e.msg.sender, name);
+// calldataarg args;
+// certorafallback_0(e, name, meta, data);
+require Slot == slot;
+
+set@withrevert(e, name, meta, data);
+
+
+metaAfter, dataAfter = getMetaData(e, slot);
+
+bool isReverted = lastReverted;
+assert isReverted;
+
+// assert dataAfter == dataBefore,"locked data should be immutable";
+}
+
 rule getTwice(env e, bytes32 hash1, bytes32 hash2){
 
-uint256 meta1;
+bytes32 meta1;
 bytes32 data1;
-uint256 meta2;
+bytes32 meta2;
 bytes32 data2;
-uint256 meta3;
+bytes32 meta3;
 bytes32 data3;
 
 require hash1 != hash2;
@@ -62,8 +92,8 @@ meta2, data2 = getMetaData(e, hash2);
 meta3, data3 = getMetaData(e, hash2);
 
 
-assert meta1 == meta2;
-assert data1 == data2;
+assert meta2 == meta3;
+assert data2 == data3;
 }
 
 
@@ -99,9 +129,9 @@ assert slot1 != slot2;
 // only the caller can write to their partition
 
 rule zonesCanWriteToTheirPartionsOnly(env e, method f){
-uint256 metaBefore;
+bytes32 metaBefore;
 bytes32 dataBefore;
-uint256 metaAfter;
+bytes32 metaAfter;
 bytes32 dataAfter;
 
 address zone;
@@ -128,11 +158,11 @@ assert false;
 rule slotGetCheck(env e, method f){
 
     bytes32 Slot;
-    uint256 metaBefore;
+    bytes32 metaBefore;
     bytes32 dataBefore;
-    uint256 metaAfter;
+    bytes32 metaAfter;
     bytes32 dataAfter;
-    uint256 meta;
+    bytes32 meta;
     bytes32 data;
     
     metaBefore, dataBefore = getMetaData(e, Slot);
@@ -149,13 +179,61 @@ rule slotGetCheck(env e, method f){
 rule slotChange(env e, method f){
 
     bytes32 Slot;
-    uint256 metaBefore;
+    bytes32 metaBefore;
     bytes32 dataBefore;
-    uint256 metaAfter;
+    bytes32 metaAfter;
     bytes32 dataAfter;
+    bytes32 name;
+    bytes32 meta;
+    bytes32 data;
+    bytes32 argsName;
+    bytes32 argsMeta;
+    bytes32 argsData;
 
+    // require Slot != 0 && Slot != 1 && Slot != 2;
+    require Slot == slotCal(e, e.msg.sender, name);
     metaBefore, dataBefore = getMetaData(e, Slot);
     require metaBefore == 0x1;
+    calldataarg args;
+
+    storage initialStorage = lastStorage;
+    
+    // checkArgs(e, args) at initialStorage;
+    // argsName, argsMeta, argsData = checkArgs(e, args);
+    
+    require argsName == name;
+
+    // f(e, args);
+    
+    set@withrevert(e, name, meta, data);
+
+    bool isReverted = lastReverted;
+    
+    // bytes32 argsName = getName(e);
+    // uint256 argsMeta = getMeta(e);
+    // bytes32 argsData = getData(e);
+
+    // f(e, args) at initialStorage;
+
+    metaAfter, dataAfter = getMetaData(e, Slot);
+    assert isReverted;
+    // assert  dataBefore == dataAfter;
+
+}
+
+rule slotChangeSetFunction(env e, method f){
+
+    bytes32 Slot;
+    bytes32 metaBefore;
+    bytes32 dataBefore;
+    bytes32 metaAfter;
+    bytes32 dataAfter;
+    bytes32 name;
+    bytes32 meta;
+    bytes32 data;
+
+    metaBefore, dataBefore = getMetaData(e, Slot);
+    require metaBefore == 0x0;
     calldataarg args;
 
     storage initialStorage = lastStorage;
@@ -163,12 +241,12 @@ rule slotChange(env e, method f){
     // checkArgs(e, args) at initialStorage;
     checkArgs(e, args);
 
-    bytes32 argsName = getName(e);
-    uint256 argsMeta = getMeta(e);
-    bytes32 argsData = getData(e);
+    // bytes32 argsName = getName(e);
+    // uint256 argsMeta = getMeta(e);
+    // bytes32 argsData = getData(e);
 
     // f(e, args) at initialStorage;
-    f(e, args);
+    // set(name, meta, data);
     
     metaAfter, dataAfter = getMetaData(e, Slot);
 
@@ -183,13 +261,15 @@ rule noOverWritingLockedSlot(env e, method f)
 filtered{ f -> f.isFallback }
 {
     bytes32 slot;
-    uint256 metaBefore;
+    bytes32 metaBefore;
     bytes32 dataBefore;
-    uint256 metaAfter;
+    bytes32 metaAfter;
     bytes32 dataAfter;
     bytes32 lockCheckBefore;
     bytes32 lockCheckAfter;
     bytes32 name;
+    bytes32 meta;
+    bytes32 data;
     
 
 
@@ -197,19 +277,20 @@ filtered{ f -> f.isFallback }
     // slot = slotCal(e.msg.sender, name);
     metaBefore, dataBefore = getMetaData(e, slot);
     // assert false;
-    require metaBefore == LOCK();
+    // require metaBefore == LOCK();
+    require metaBefore == 0x1;
     // assert false;
 
     calldataarg args;
 
-    storage initialStorage = lastStorage;
+    // storage initialStorage = lastStorage;
 
     // checkArgs(e, args) at initialStorage;
     checkArgs(e, args);
 
-    bytes32 argsName = getName(e);
-    uint256 argsMeta = getMeta(e);
-    bytes32 argsData = getData(e);
+    bytes32 argsName;
+    uint256 argsMeta;
+    bytes32 argsData;
 
     require argsName == name;
     require argsData != dataBefore;
@@ -217,13 +298,14 @@ filtered{ f -> f.isFallback }
 
     // f(e, args) at initialStorage;
     f(e, args);
+    // set@withrevert(name, meta, data);
     
     // set(e, name, meta, data);
     // certorafallback_0(e, name, meta, data);
     metaAfter, dataAfter = getMetaData(e, slot);
 
     assert false;
-    // assert dataAfter == dataBefore,"Locked data cannot be overwritten";
+    assert dataAfter == dataBefore,"Locked data cannot be overwritten";
 
 }
 
@@ -311,8 +393,9 @@ filtered{ f -> f.isFallback }
 
 // STATUS - in progress / verified / error / timeout / etc.
 // TODO: rule description
+
 rule basicFRule(env e, method f) {
-    uint256 meta1;
+    bytes32 meta1;
     bytes32 data1;
     bytes32 name1;
 
@@ -328,9 +411,9 @@ rule basicFRule(env e, method f) {
 
     checkArgs(e, args) at initialStorage;
 
-    bytes32 name = getName(e);
-    uint256 meta = getMeta(e);
-    bytes32 data = getData(e);
+    // bytes32 name = getName(e);
+    // uint256 meta = getMeta(e);
+    // bytes32 data = getData(e);
 
     assert false, "Remember, with great power comes great responsibility.";
 }
