@@ -60,10 +60,10 @@ bytes32 dataAfter;
 
 metaBefore, dataBefore = getMetaData(e, slot);
 require metaBefore == 0x1;
-Slot = slotCal(e, e.msg.sender, name);
+ require slot == slotCal(e, e.msg.sender, name);
 // calldataarg args;
 // certorafallback_0(e, name, meta, data);
-require Slot == slot;
+// require Slot == slot;
 
 set@withrevert(e, name, meta, data);
 
@@ -199,13 +199,13 @@ rule slotChange(env e, method f){
     storage initialStorage = lastStorage;
     
     // checkArgs(e, args) at initialStorage;
-    // argsName, argsMeta, argsData = checkArgs(e, args);
+    argsName, argsMeta, argsData = checkArgs(e, args);
     
     require argsName == name;
 
-    // f(e, args);
+    f@withrevert(e, args);
     
-    set@withrevert(e, name, meta, data);
+    // set@withrevert(e, name, meta, data);
 
     bool isReverted = lastReverted;
     

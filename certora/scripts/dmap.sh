@@ -5,7 +5,7 @@ certoraRun certora/harness/dmapHarness.sol \
     --optimistic_loop \
     --send_only \
     --solc_args "['--optimize', '200']" \
-    --msg "metaBefore = 0 and with initialStorage" \
+    --msg "parametric revert check" \
     --rule "$1" \
     --rule_sanity basic
 
