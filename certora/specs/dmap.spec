@@ -10,6 +10,7 @@ methods {
 }
 
 definition LOCK() returns uint256 = 1;
+definition MAX_bytes32() returns bytes32 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
 
  /******************************************************************
@@ -193,13 +194,13 @@ rule slotChange(env e, method f){
     // require Slot != 0 && Slot != 1 && Slot != 2;
     require Slot == slotCal(e, e.msg.sender, name);
     metaBefore, dataBefore = getMetaData(e, Slot);
-    require metaBefore == 0x1;
+    require metaBefore == 0x0;
     calldataarg args;
 
     storage initialStorage = lastStorage;
     
     // checkArgs(e, args) at initialStorage;
-    argsName, argsMeta, argsData = checkArgs(e, args);
+    argsName, argsMeta, argsData = checkArgsReturn(e, args);
     
     require argsName == name;
 
@@ -212,6 +213,50 @@ rule slotChange(env e, method f){
     // bytes32 argsName = getName(e);
     // uint256 argsMeta = getMeta(e);
     // bytes32 argsData = getData(e);
+
+    // f(e, args) at initialStorage;
+
+    metaAfter, dataAfter = getMetaData(e, Slot);
+    assert isReverted;
+    // assert  dataBefore == dataAfter;
+
+}
+
+rule slotChangewithStateArgsCheck(env e, method f){
+
+    bytes32 Slot;
+    bytes32 metaBefore;
+    bytes32 dataBefore;
+    bytes32 metaAfter;
+    bytes32 dataAfter;
+    bytes32 name;
+    // bytes32 meta;
+    // bytes32 data;
+
+    // require Slot != 0 && Slot != 1 && Slot != 2;
+    require Slot == slotCal(e, e.msg.sender, name);
+    metaBefore, dataBefore = getMetaData(e, Slot);
+    require metaBefore == 0x0;
+    require Slot > 5;
+    calldataarg args;
+
+    storage initialStorage = lastStorage;
+    
+    // argsName, argsMeta, argsData = checkArgs(e, args);
+
+    checkArgs(e, args) at initialStorage;
+    bytes32 argsName = getName(e);
+    bytes32 argsMeta = getMeta(e);
+    bytes32 argsData = getData(e);
+    
+    require argsName == name;
+
+    f@withrevert(e, args) at initialStorage;
+    
+    // set@withrevert(e, name, meta, data);
+
+    bool isReverted = lastReverted;
+    
 
     // f(e, args) at initialStorage;
 
@@ -416,4 +461,144 @@ rule basicFRule(env e, method f) {
     // bytes32 data = getData(e);
 
     assert false, "Remember, with great power comes great responsibility.";
+}
+
+// basic parametric rule checking immutability of locked slot. Checking if the data in a locked slot can be changed by
+// calling any function with any arguments.
+// FAILED. All non-view/pure functions fail this including checkArgs().
+// https://vaas-stg.certora.com/output/11775/56275102f2f888aeadc8/?anonymousKey=b4aa8b53bb98a2eb6125284112820592de84a32e
+
+
+rule basicImmutabilityCheck(env e, method f){
+    bytes32 slot;
+    bytes32 metaBefore;
+    bytes32 dataBefore;
+    
+    metaBefore, dataBefore = getMetaData(e, slot);
+    require metaBefore == 0x1;
+
+    calldataarg args;
+    f(e, args);
+
+    bytes32 metaAfter;
+    bytes32 dataAfter;
+
+    metaAfter, dataAfter = getMetaData(e, slot);
+
+    assert dataAfter == dataBefore && metaBefore == metaAfter,"locked slot must be immutable";
+}
+
+// parametric rule with checkArgs() and global variables to check what arguments are supplied. checkArgs and f(e,args)
+// called with and without initialStorage. FAILED. All non-view/pure functions failing. The changed data is different from the args.
+// with initialStorage: https://vaas-stg.certora.com/output/11775/cd67bc48d25c5e69832e/?anonymousKey=b8d24db94c93db4debf3015406dd19c4df2ce26f
+// all the pure view functions pass and other fail. setStore and checkArgs should fail as they don't have any checks built in
+// Set function counterexample shows that the previous slot is being written into and hence meta is being changed.
+// 
+
+// without initialStorage: https://vaas-stg.certora.com/output/11775/7bec1570630e74c0c3d3/?anonymousKey=da51105b45d3a5bf4e784cdc9fd408d81ddaef9d
+rule immutabilityParametricWithCheckArgs(env e, method f){
+    bytes32 slot;
+    bytes32 metaBefore;
+    bytes32 dataBefore;
+    
+    metaBefore, dataBefore = getMetaData(e, slot);
+    require metaBefore == 0x1;
+    // require slot > 0x5;
+    require slot > 0x5;
+    require slot < MAX_bytes32();
+
+    storage initialStorage = lastStorage;
+    
+    calldataarg args;
+    checkArgs(e, args) at initialStorage;
+    // checkArgs(e, args);
+    bytes32 argsName = getName(e);
+    bytes32 argsMeta = getMeta(e);
+    bytes32 argsData = getData(e);
+
+    f(e, args) at initialStorage;
+    // f(e, args);
+
+    bytes32 metaAfter;
+    bytes32 dataAfter;
+
+    metaAfter, dataAfter = getMetaData(e, slot);
+
+    assert dataAfter == dataBefore,"locked slot must be immutable";
+}
+
+// same as above but with tied slot
+// https://vaas-stg.certora.com/output/11775/0a06f0b16ade6eede9a9/?anonymousKey=dbf6f3cc7f356357591c472b41aaf062b3d10c74
+
+rule immutabilityParametricWithCheckArgsAndTiedSlot(env e, method f){
+    bytes32 slot;
+    bytes32 metaBefore;
+    bytes32 dataBefore;
+    bytes32 name;
+    bytes32 meta;
+    bytes32 data;
+    bytes32 argsName;
+    bytes32 argsMeta;
+    bytes32 argsData;
+    require slot == slotCal(e, e.msg.sender, name);
+    
+    metaBefore, dataBefore = getMetaData(e, slot);
+    require metaBefore == 0x1;
+    // require slot > 0x5;
+    // require slot > 0x5;
+    // require slot < MAX_bytes32();
+
+    // storage initialStorage = lastStorage;
+    
+    calldataarg args;
+    // checkArgs(e, args) at initialStorage;
+
+    argsName, argsMeta, argsData = checkArgsReturn(e, args);
+
+    // checkArgs(e, args);
+    // bytes32 argsName = getName(e);
+    // bytes32 argsMeta = getMeta(e);
+    // bytes32 argsData = getData(e);
+    require argsName == name;
+
+    // f(e, args) at initialStorage;
+    f(e, args);
+
+    bytes32 metaAfter;
+    bytes32 dataAfter;
+
+    metaAfter, dataAfter = getMetaData(e, slot);
+
+    assert dataAfter == dataBefore,"locked slot must be immutable";
+}
+
+// parametric rule with checkArgsReturn to see if storage variables could be messing with storage. 
+rule immutabilityParametricWithCheckArgsReturn(env e, method f){
+    bytes32 slot;
+    bytes32 metaBefore;
+    bytes32 dataBefore;
+    bytes32 argsName;
+    bytes32 argsMeta;
+    bytes32 argsData;
+    bytes32 name;
+    bytes32 meta;
+    bytes32 data;
+
+    require slot == slotCal(e, e.msg.sender, name);
+    metaBefore, dataBefore = getMetaData(e, slot);
+    require metaBefore == 0x1;
+
+    // storage initialStorage = lastStorage;
+    
+    calldataarg args;
+    argsName, argsMeta, argsData = checkArgsReturn(e, args);
+
+    f(e, args);
+
+    bytes32 metaAfter;
+    bytes32 dataAfter;
+
+    metaAfter, dataAfter = getMetaData(e, slot);
+
+    assert dataAfter == dataBefore && metaBefore == metaAfter,"locked slot must be immutable";
 }

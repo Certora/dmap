@@ -98,26 +98,31 @@ contract dmapHarness is _dmap_ {
     //     z=x+y;
     // }
 
-    // bytes32 nameGlobal;
-    // uint256 metaGlobal;
-    // bytes32 dataGlobal;
+    bytes32 nameGlobal;
+    bytes32 metaGlobal;
+    bytes32 dataGlobal;
 
-    function checkArgs(bytes32 name, bytes32 meta, bytes32 data) public returns(bytes32 Name, bytes32 Meta, bytes32 Data){
+    function checkArgs(bytes32 name, bytes32 meta, bytes32 data) public {
+        nameGlobal = name;
+        metaGlobal = meta;
+        dataGlobal = data;
+    }
+    function checkArgsReturn(bytes32 name, bytes32 meta, bytes32 data) public pure returns(bytes32 Name, bytes32 Meta, bytes32 Data){
         Name = name;
         Meta = meta;
         Data = data;
     }
-    // function getName() public returns(bytes32) {
-    //     return nameGlobal;
-    // }
+    function getName() public view returns(bytes32) {
+        return nameGlobal;
+    }
 
-    // function getMeta() public returns(uint256) {
-    //     return metaGlobal;
-    // }
+    function getMeta() public view returns(bytes32) {
+        return metaGlobal;
+    }
 
-    // function getData() public returns(bytes32) {
-    //     return dataGlobal;
-    // }
+    function getData() public view returns(bytes32) {
+        return dataGlobal;
+    }
 
     // function calculateSlot(address zone, bytes32 name) external pure returns(bytes32 slot){
     //     slot = keccak256(zone, name);

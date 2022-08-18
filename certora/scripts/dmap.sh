@@ -5,9 +5,10 @@ certoraRun certora/harness/dmapHarness.sol \
     --optimistic_loop \
     --send_only \
     --solc_args "['--optimize', '200']" \
-    --msg "parametric revert check" \
+    --msg "parametric with checkArgs without initialStorage with slot > 5" \
     --rule "$1" \
-    --rule_sanity basic
+    --rule_sanity basic \
+    --settings -useBitVectorTheory
 
 
   # certora/harness/rootHarness.sol \
