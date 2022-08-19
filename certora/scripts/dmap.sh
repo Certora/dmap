@@ -1,14 +1,14 @@
 certoraRun certora/harness/dmapHarness.sol \
     --verify dmapHarness:certora/specs/dmap.spec \
     --solc solc8.13 \
-    --staging \
+    --staging shelly/bankdevHack \
     --optimistic_loop \
     --send_only \
     --solc_args "['--optimize', '200']" \
-    --msg "parametric with checkArgs without initialStorage with slot > 5" \
+    --msg "shelly's fix - basic data check, no name requirement" \
     --rule "$1" \
     --rule_sanity basic \
-    --settings -useBitVectorTheory
+    --settings -enableCalldataSplitting=false
 
 
   # certora/harness/rootHarness.sol \
