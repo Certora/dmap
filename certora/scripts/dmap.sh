@@ -5,7 +5,7 @@ certoraRun certora/harness/dmapHarness.sol \
     --optimistic_loop \
     --send_only \
     --solc_args "['--optimize', '200']" \
-    --msg "shelly's fix - basic data check, no name requirement" \
+    --msg "shelly's fix - basic data check" \
     --rule "$1" \
     --rule_sanity basic \
     --settings -enableCalldataSplitting=false

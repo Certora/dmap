@@ -1,0 +1,5 @@
+# Certora
+.certora*
+.last_confs
+certora_*
+resource_errors.json
