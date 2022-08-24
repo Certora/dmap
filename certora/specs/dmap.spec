@@ -122,6 +122,7 @@ bytes32 slot2 = slotCal(e, zone2, name2);
 bytes32 slot3 = slotCal(e, zone2, name2);
 // bytes32 slot2 = slotCal(e, zone2, name2);
 assert slot1 != slot2;
+assert slot2 == slot3;
 // assert false;
 // assert slot1 != slot2,"hash collision";
 }
