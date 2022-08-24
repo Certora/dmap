@@ -42,10 +42,13 @@ contract dmapHarness is _dmap_ {
         mstore(0, zone)
         mstore(32, name)
 
-        slot := keccak256(0,64)
+        // slot := keccak256(0,64)
+        mstore(64, keccak256(0,64)) //storing hash in memory for better readability
+        return(64,32) // returning hash from memory
     }
     }
 
+    
     function set (bytes32 nameArg, bytes32 metaArg, bytes32 dataArg) external {
         assembly{
         let name := calldataload(4)
@@ -54,10 +57,14 @@ contract dmapHarness is _dmap_ {
         mstore(0, caller())
         mstore(32, name)
         let slot := keccak256(0, 64)
+        // mstore(64,keccak256(0, 64)) //hash stored in memory for readability
         log4(0, 0, caller(), name, meta, data)
         sstore(add(slot, 1), data)
+        // sstore(add(mload(64), 1), data) //loading hash from memory
         if iszero(or(xor(100, calldatasize()), and(LOCK, sload(slot)))) {
+        // if iszero(or(xor(100, calldatasize()), and(LOCK, sload(mload(64))))) { //loading hash from memory
             sstore(slot, meta)
+            // sstore(mload(64), meta)
             return(0, 0)
         }
         if eq(100, calldatasize()) {
@@ -107,7 +114,7 @@ contract dmapHarness is _dmap_ {
     //     metaGlobal = meta;
     //     dataGlobal = data;
     // }
-    function checkArgsReturn(bytes32 name, bytes32 meta, bytes32 data) public pure returns(bytes32 Name, bytes32 Meta, bytes32 Data){
+    function unpackArgs(bytes32 name, bytes32 meta, bytes32 data) public pure returns(bytes32 Name, bytes32 Meta, bytes32 Data){
         Name = name;
         Meta = meta;
         Data = data;

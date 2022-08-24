@@ -129,32 +129,6 @@ assert slot1 != slot2;
 
 // only the caller can write to their partition
 
-rule zonesCanWriteToTheirPartionsOnly(env e, method f){
-bytes32 metaBefore;
-bytes32 dataBefore;
-bytes32 metaAfter;
-bytes32 dataAfter;
-
-address zone;
-bytes32 name;
-bytes32 slot = slotCal(e, zone, name);
-metaBefore, dataBefore = getMetaData(e, slot);
-// require metaBefore == 0x0;
-calldataarg args;
-
-f(e, args);
-metaAfter, dataAfter = getMetaData(e, slot);
-
-// require metaAfter != metaBefore;
-
-// assert (metaAfter != metaBefore) => e.msg.sender != zone,
-assert e.msg.sender == zone,
-"zones cannot write to meta of partitions of other zones";
-// assert dataBefore != dataAfter <=> e.msg.sender == zone,
-// "zones cannot write to data of partitions of other zones";
-assert false;
-
-}
 
 rule slotGetCheck(env e, method f){
 
@@ -200,7 +174,7 @@ rule slotChange(env e, method f){
     storage initialStorage = lastStorage;
     
     // checkArgs(e, args) at initialStorage;
-    argsName, argsMeta, argsData = checkArgsReturn(e, args);
+    argsName, argsMeta, argsData = unpackArgs(e, args);
     
     require argsName == name;
 
@@ -527,6 +501,38 @@ rule basicImmutabilityCheck(env e, method f){
 //     assert dataAfter == dataBefore,"locked slot must be immutable";
 // }
 
+rule zonesCanWriteToTheirPartionsOnly(env e, method f){
+bytes32 metaBefore;
+bytes32 dataBefore;
+bytes32 metaAfter;
+bytes32 dataAfter;
+
+bytes32 name1;
+bytes32 name2;
+bytes32 meta;
+bytes32 data;
+
+address zone;
+bytes32 slot;
+
+require slot == slotCal(e, zone, name1);
+
+
+metaBefore, dataBefore = getMetaData(e, slot);
+// calldataarg args;
+// require metaBefore == 0x1;
+// require e.msg.sender !=  zone;
+
+// f(e, args);
+set(e, name2, meta, data);
+
+metaAfter, dataAfter = getMetaData(e, slot);
+
+// assert true;
+// assert dataBefore == dataAfter,"data should not have changed";
+assert dataBefore != dataAfter => e.msg.sender == zone,"zones cannot write to partitions of other zones";
+}
+
 // same as above but with tied slot
 // https://vaas-stg.certora.com/output/11775/0a06f0b16ade6eede9a9/?anonymousKey=dbf6f3cc7f356357591c472b41aaf062b3d10c74
 
@@ -543,13 +549,10 @@ rule immutabilityParametricWithCheckArgsAndTiedSlot(env e, method f){
     require slot == slotCal(e, e.msg.sender, name);
     
     metaBefore, dataBefore = getMetaData(e, slot);
-    require metaBefore == 0x1;
-    require slot > 0x5;
-    require slot < MAX_bytes32();
     
     calldataarg args;
 
-    argsName, argsMeta, argsData = checkArgsReturn(e, args);
+    argsName, argsMeta, argsData = unpackArgs(e, args);
 
     require argsName == name;
 
@@ -560,11 +563,11 @@ rule immutabilityParametricWithCheckArgsAndTiedSlot(env e, method f){
 
     metaAfter, dataAfter = getMetaData(e, slot);
 
-    assert dataAfter == dataBefore,"locked slot must be immutable";
+    assert metaBefore == 0x1 => dataAfter == dataBefore,"locked slot must be immutable"; // wrong assertion to generate a violation
 }
 
-// parametric rule with checkArgsReturn to see if storage variables could be messing with storage. 
-rule immutabilityParametricWithCheckArgsReturn(env e, method f){
+// parametric rule with unpackArgs to see if storage variables could be messing with storage. 
+rule immutabilityParametricWithUnpackArgs(env e, method f){
     bytes32 slot;
     bytes32 metaBefore;
     bytes32 dataBefore;
@@ -582,7 +585,7 @@ rule immutabilityParametricWithCheckArgsReturn(env e, method f){
     // storage initialStorage = lastStorage;
     
     calldataarg args;
-    argsName, argsMeta, argsData = checkArgsReturn(e, args);
+    argsName, argsMeta, argsData = unpackArgs(e, args);
 
     f(e, args);
 
@@ -592,4 +595,4 @@ rule immutabilityParametricWithCheckArgsReturn(env e, method f){
     metaAfter, dataAfter = getMetaData(e, slot);
 
     assert dataAfter == dataBefore && metaBefore == metaAfter,"locked slot must be immutable";
-}
+}   

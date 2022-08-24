@@ -1,11 +1,11 @@
 certoraRun certora/harness/dmapHarness.sol \
     --verify dmapHarness:certora/specs/dmap.spec \
     --solc solc8.13 \
-    --staging shelly/bankdevHack \
+    --staging \
     --optimistic_loop \
     --send_only \
     --solc_args "['--optimize', '200']" \
-    --msg "shelly's fix - basic data check" \
+    --msg "altered assembly code with hash in memory" \
     --rule "$1" \
     --rule_sanity basic \
     --settings -enableCalldataSplitting=false
