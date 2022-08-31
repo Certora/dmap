@@ -4,10 +4,10 @@
 
 pragma solidity 0.8.13;
 
-import {_dmap_} from "../../core/dmap.sol";
+import {_dmapSol_} from "certora/contracts/dmapSol.sol";
 
-contract dmapHarness is _dmap_ {
-    constructor(address rootzone) _dmap_(rootzone) {}
+contract dmapSolHarness is _dmapSol_ {
+    constructor(address rootzone) _dmapSol_(rootzone) {}
     function getMetaData (bytes32 slot) external returns(bytes32 meta, bytes32 data)
     { assembly{
                 // let x := mload(64)
@@ -44,28 +44,6 @@ contract dmapHarness is _dmap_ {
     }
 
     
-    function set (bytes32 nameArg, bytes32 metaArg, bytes32 dataArg) external {
-        assembly{
-        let name := calldataload(4)
-        let meta := calldataload(36)
-        let data := calldataload(68)
-        mstore(0, caller())
-        mstore(32, name)
-        let slot := keccak256(0, 64)
-        log4(0, 0, caller(), name, meta, data)
-        sstore(add(slot, 1), data)
-        if iszero(or(xor(100, calldatasize()), and(LOCK, sload(slot)))) {
-            sstore(slot, meta)
-            return(0, 0)
-        }
-        if eq(100, calldatasize()) {
-            mstore(0, shl(224, 0xa1422f69))
-            revert(0, 4)
-        }
-        revert(0, 0)
-
-    }  
-    }
     
     function unpackArgs(bytes32 name, bytes32 meta, bytes32 data) public pure returns(bytes32 Name, bytes32 Meta, bytes32 Data){
         Name = name;
