@@ -43,7 +43,9 @@ contract dmapSolHarness is _dmapSol_ {
     }
     }
 
-    
+    function rootHashCal(bytes32 salt, bytes32 name, address zone) external pure returns(bytes32 hash){
+        hash = keccak256(abi.encode(salt, name, zone));
+    }
     
     function unpackArgs(bytes32 name, bytes32 meta, bytes32 data) public pure returns(bytes32 Name, bytes32 Meta, bytes32 Data){
         Name = name;

@@ -29,7 +29,7 @@ contract _dmapSol_ {
     uint256 constant LOCK = 0x1;
     uint256 lock;
     uint256 rootZone;
-    mapping(bytes32 => bytes32) public dns;
+    mapping(bytes32 => bytes32) dns;
 
     constructor(address root) { 
         lock = LOCK;
